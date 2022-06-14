@@ -101,6 +101,20 @@ class Enrollment(models.Model):
     # Has a grade point for each question
     # Has question content
     # Other fields and methods you would like to design
+
+class Question(models.Model):
+    lessons = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)     
+    grade = models.IntegerField(default=0)
+    question_text = models.TextField(max_length=300)
+
+    def is_get_score(self, selected_ids):
+        all_answers = self.choice_set.filter(is_correct=True).count()
+        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+        if all_answers == selected_correct:
+            return True
+        else:
+            return False
+
 #class Question(models.Model):
     # Foreign key to lesson
     # question text
@@ -122,6 +136,17 @@ class Enrollment(models.Model):
     # Choice content
     # Indicate if this choice of the question is a correct one or not
     # Other fields and methods you would like to design
+
+class Choice(models.Model):
+    questions = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    choice_text = models.TextField(max_length=300)
+    is_correct = models.BooleanField(default=False)
+    courses = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+
+class Submission(models.Model):
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
+
 # class Choice(models.Model):
 
 # <HINT> The submission model
