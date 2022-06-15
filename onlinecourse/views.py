@@ -117,12 +117,12 @@ def submit(request, course_id):
         course = get_object_or_404(Course, id=course_id)
         user = request.user
         enrollment = Enrollment.objects.get(user=user, course=course)
-        Submission.objects.create(enrollment=enrollment)
+        submission = Submission.objects.create(enrollment=enrollment)
         submitted_answers = extract_answer(request)
-        submission = Submission.objects.get(enrollment=enrollment)
-        submission.choices = submitted_answers
+        for choice in submitted_answers:
+            submission.choices.add(choice)
         submission.save()
-        return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course_id, submission_id)))
+        return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course_id, submission.id)))
     else:
         raise Http404("No no no")
 
@@ -167,4 +167,4 @@ def show_exam_result(request, course_id, submission_id):
     context["submission_id"] = submission_id
     context["grade"] = total_score
 
-    return HttpResponseRedirect(request, 'onlinecourse/exam_result_bootstrap.html', context)
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)

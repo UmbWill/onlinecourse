@@ -65,7 +65,7 @@
             <button class="btn btn-primary btn-block" data-toggle="collapse" data-target="#exam">Exams</button>
             {% if user.is_authenticated %}    
                 <div id="exam" class="collapse">
-                    <form id="questions" action="submit" method="post">
+                    <form id="questions" action="{% url 'onlinecourse:submit' course.id %}" method="post">
                         <div class="card-deck">
                             {% for question in course.question_set.all %}
                                 <div class="card mt-1">
