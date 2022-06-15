@@ -163,8 +163,11 @@ def show_exam_result(request, course_id, submission_id):
     for choice in choices:
         if choice.is_correct:
             total_score += choice.questions.grade 
+        else:
+            total_score -= 30
+    total_score = max(total_score, 0)            
     context["course"] = course
-    context["submission_id"] = submission_id
+    context["submission"] = submission
     context["grade"] = total_score
-
+    print(context)
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
