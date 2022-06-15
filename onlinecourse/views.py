@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 # <HINT> Import any new Models here
-from .models import Course, Enrollment
+from .models import Course, Enrollment, Question, Choice, Submission
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -11,7 +11,6 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # Create your views here.
-
 
 def registration_request(request):
     context = {}
@@ -112,6 +111,29 @@ def enroll(request, course_id):
          # Redirect to show_exam_result with the submission id
 #def submit(request, course_id):
 
+def submit(request, course_id):
+    context = {}
+    if request.method == "POST":
+        course = get_object_or_404(Course, id=course_id)
+        user = request.user
+        enrollment = Enrollment.objects.get(user=user, course=course)
+        Submission.objects.create(enrollment=enrollment)
+        submitted_answers = extract_answer(request)
+        submission = Submission.objects.get(enrollment=enrollment)
+        submission.choices = submitted_answers
+        submission.save()
+        return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course_id, submission_id)))
+    else:
+        raise Http404("No no no")
+
+def extract_answer(request):
+    submitted_answers = []
+    for key in request.POST:
+        if key.startswith("choice"):
+            current_choice = request.POST[key]
+            curr_choice_id = int(current_choice)
+            submitted_answers.append(curr_choice_id)
+    return submitted_answers
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
 #def extract_answers(request):
@@ -132,5 +154,17 @@ def enroll(request, course_id):
         # Calculate the total score
 #def show_exam_result(request, course_id, submission_id):
 
+def show_exam_result(request, course_id, submission_id):
+    context = {}
+    course = Course.objects.get(id=course_id)
+    submission = Submission.objects.get(id=submission_id)
+    choices = submission.choices.all()
+    total_score = 0
+    for choice in choices:
+        if choice.is_correct:
+            total_score += choice.questions.grade 
+    context["course"] = course
+    context["submission_id"] = submission_id
+    context["grade"] = total_score
 
-
+    return HttpResponseRedirect(request, 'onlinecourse/exam_result_bootstrap.html', context)
