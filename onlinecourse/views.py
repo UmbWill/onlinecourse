@@ -163,8 +163,8 @@ def show_exam_result(request, course_id, submission_id):
     for choice in choices:
         if choice.is_correct:
             total_score += choice.questions.grade 
-        else:
-            total_score -= 30
+        #else:
+        #    total_score -= 30
     total_score = max(total_score, 0)            
     context["course"] = course
     context["submission"] = submission
